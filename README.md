@@ -8,15 +8,18 @@ A 'R' language library that takes as input a Cinema database and produces a new 
 
 ** R Studio not required**
 
-# Components 
+# Files
 ### changeDetection.R
 The wrapper library that take in a Cinema data.csv file and supporting arguments, applies the change detection algorithm and write the results to a new column of the data.csv file, as a png graph and as a json. 
 
 ### run_lm.R
 The Myers et al. change detection algorithm using piecewise linear regression to find change points.
 
-###part_sweep.R
+### part_sweep.R
 Supporting file for change detection algorithm.
 
-###rss_sweep.R
+### rss_sweep.R
 Supporting file for change detection algorithm. 
+
+# Usage
+
