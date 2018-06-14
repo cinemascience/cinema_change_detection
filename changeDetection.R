@@ -35,7 +35,7 @@ parser$add_argument("-r", "--restrict", nargs='+', help='restrict rows based on 
 parser$add_argument("-x", "--xVal", help='the x paramter column to iterate over')
 parser$add_argument("-y", "--yVal", help='the y parameter column to find change over')
 parser$add_argument("-cd", "--cdParams", type="double", nargs='+', help='parameters for Myers et al. change detection algorithm')
-
+parser$add_argument("-o", "--output", help='output phrase to mark files by')
 
 args <- parser$parse_args()
 
@@ -133,9 +133,9 @@ if (!dir.exists(file.path(args$path, "CCD")))
     dir.create(file.path(args$path, "CCD"))
 
 # Plotting the data, the partition lines, and the linear regression model lines in each partition.
-changePlot <- ggplot(dfData, aes(x = changePointsToZero, y = featureMetricToZero)) + geom_point(size = 1.2, alpha=1) + geom_line(size=0.5, alpha=1) + labs(x = args$x, y = args$y) + geom_segment(data = seg, mapping = aes(x = x, y = y, xend = xend, yend = yend), size = 2, colour = rgb(199/255,27/255,0/255), alpha = 1) + geom_point(data=df, mapping = aes(x=changePointsGraph, y=changePointsY), color=rgb(57/255,131/255,235/255), alpha=1, size = 4) + theme(panel.background = element_rect(fill="grey99", color="black"), axis.text = element_text(size=18), axis.title = element_text(size=20), panel.grid.major = element_line(color = "grey80"), panel.grid.minor = element_line(color="grey90"))
+changePlot <- ggplot(dfData, aes(x = changePointsToZero, y = featureMetricToZero)) + geom_point(size = 1.2, alpha=0.5) + geom_line(size=0.5, alpha=0.5) + labs(x = args$x, y = args$y) + geom_segment(data = seg, mapping = aes(x = x, y = y, xend = xend, yend = yend), size = 2, colour = rgb(199/255,27/255,0/255), alpha = 0.6) + geom_point(data=df, mapping = aes(x=changePointsGraph, y=changePointsY), color=rgb(57/255,131/255,235/255), alpha=1, size = 4) + theme(panel.background = element_rect(fill="grey99", color="black"), axis.text = element_text(size=18), axis.title = element_text(size=20), panel.grid.major = element_line(color = "grey80"), panel.grid.minor = element_line(color="grey90"))
 
-ggsave(paste(args$path, "/CCD/", "CCD_",args$x,"_",args$y, ".png", sep=""), plot = changePlot, width=512, height=128, units ="mm", dpi=100)
+ggsave(paste(args$path, "/CCD/", "CCD_",args$output, ".png", sep=""), plot = changePlot, width=512, height=128, units ="mm", dpi=100)
 
 #write the corresponding json file
 titleText <- ""
@@ -145,10 +145,12 @@ for (i in seq(1,length(args$restrict),2)) #interate through the restrictions
 }
 titleText <- substr(titleText, 1, nchar(titleText)-2)
 descText <- paste("There are", toString(length(changePoints)), "change points in this study.", sep=" ")
-imageText <- paste(args$path, "/CCD/", "CCD_",args$x,"_",args$y, ".png", sep="")
-jsonData <- list( list (title = titleText, desc = descText, parameters = list(args$x, args$y), date = Sys.time(), image = imageText))
+#imageText <- paste(args$path, "/CCD/", "CCD_",args$x,"_",args$y, ".png", sep="")
+imageText <- paste("/CCD/", "CCD_", args$output, ".png", sep="")
+jsonData <- list (title = titleText, desc = descText, parameters = list(args$x, args$y), date = Sys.time(), image = imageText, cinema = list(columnname=args$output))
+
 json<-toJSON(jsonData, auto_unbox=TRUE, pretty = TRUE)
-write(json, file= paste(args$path, "/CCD/", "CCD_",args$x,"_",args$y, ".json", sep=""))
+write(json, file= paste(args$path, "/CCD/", "CCD_",args$output, ".json", sep=""))
 
 
 # order segments into row for for csv file
@@ -181,7 +183,7 @@ for (i in 1:length(changePoints))
 #write output csvFile
 
 csvOutputFile <- cbind(csvOutputFile, changePts)
-colnames(csvOutputFile)[which(names(csvOutputFile) == "changePts")] <- paste("CCD_",args$x,"_",args$y, sep="")
+colnames(csvOutputFile)[which(names(csvOutputFile) == "changePts")] <- paste("CCD_",args$output, sep="")
 write.csv(csvOutputFile, args$csvFile, row.names=FALSE)
 
 

@@ -36,7 +36,8 @@ The command line tool is executed as follows:
 - **-x columnNameOfXParameter** Identify a column name to iterate over, after restrictions have been taken into account
 - **-y columnNameOfYParameter** Identify a column name to apply change detection to, after restrictions have been taken into account.
 - **-cd B alpha delta** Supply the B, alpha and delta parameters for the Myers et al. change detection algorithm (see paper for more details).
+- **-o outputName** Identify the name to use for outputfiles for this particular run of change detection.
 
 Example:
 
-> Rscript changeDetection.R -f /Users/genericUser/Desktop/metrics/changeDetection/commandLine/project/nyx.cdb/data.csv -p /Users/genericUser/Desktop/metrics/changeDetection/commandLine/project/nyx.cdb -r phi -180 theta -45  iso 2 -x time -y canny -cd 7 0.7 1
+> Rscript changeDetection.R -f /Users/genericUser/Desktop/metrics/changeDetection/commandLine/project/nyx.cdb/data.csv -p /Users/genericUser/Desktop/metrics/changeDetection/commandLine/project/nyx.cdb -r phi -180 theta -45  iso 2 -x time -y canny -cd 7 0.7 1 -o iso1_Time_vs_Canny
