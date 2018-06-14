@@ -59,7 +59,6 @@ for (i in seq(1,length(args$restrict),2)) #interate through the restrictions
     #csvInputFile <- csvInputFile[csvInputFile[,"phi"]==-180,]
 }
 
-
 featureMetric <- csvInputFile[,args$y]
 inputParam <- 1:dim(csvInputFile)[1]
 inputValues <- csvInputFile[,args$x]
@@ -68,6 +67,7 @@ inputValues <- csvInputFile[,args$x]
 
 # source file for Myers et al. technique
 source('cinema_change_detection/run_lm.R')
+#source('run_lm.R')
 
 #set parameters for Myers et al. techniques
 B <- as.integer(args$cd[1])
@@ -154,7 +154,7 @@ write(json, file= paste(args$path, "/CCD/", "CCD_",args$output, ".json", sep="")
 
 
 # order segments into row for for csv file
-csvOutputFile <- read.csv(file=args$csvFile) #need to get full db now
+csvOutputFile <- read.csv(file=args$csvFile, check.names=FALSE) #need to get full db now
 
 changePoints <- changePoints + 1
 
