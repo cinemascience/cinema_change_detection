@@ -27,14 +27,14 @@ Supporting file for change detection algorithm.
 
 The command line tool is executed as follows: 
 
-> Rscript changeDetection.R -f path/to/data.csv -p path/to/results/folder -r columnName columnValue columnNames columnValue... -x columnNameOfXParameter -y columnNameOfYParameter -cd B alpha delta
+> Rscript changeDetection.R -f path/to/data.csv -p path/to/results/folder -r columnName columnValue columnNames columnValue... -x columnNameOfXParameter -y columnNameOfYParameter -cd B alpha delta -o uniqueUserDefinedPhrase
 
 - **changeDetection.R** The wrapper file for change detection.
 - **-f path/to/data.csv** This file contains the data to apply change detection on.
 - **-p path/to/results/folder** This path is where the CCD folder will be located.
-- **-r columnName columnValue** If the user wants to limit the data used for change detection, they can supply the algorithm with a columnName and corresponding columnValue to restrict the rows anlayzed to the values given. This can be any number of columns, one value per column.
-- **-x columnNameOfXParameter** Identify a column name to iterate over, after restrictions have been taken into account
-- **-y columnNameOfYParameter** Identify a column name to apply change detection to, after restrictions have been taken into account.
+- **-r columnName columnValue** If the user wants to limit the data used for change detection, they can supply the algorithm with a columnName and corresponding columnValue to restrict the rows anlayzed to the values given. This can be any number of columns, one value per column. (put column names with spaces within double quotes)
+- **-x columnNameOfXParameter** Identify a column name to iterate over, after restrictions have been taken into account. (put column names with spaces within double quotes)
+- **-y columnNameOfYParameter** Identify a column name to apply change detection to, after restrictions have been taken into account. (put column names with spaces within double quotes)
 - **-cd B alpha delta** Supply the B, alpha and delta parameters for the Myers et al. change detection algorithm (see paper for more details).
 - **-o outputName** Identify the name to use for outputfiles for this particular run of change detection.
 
