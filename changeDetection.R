@@ -59,7 +59,8 @@ for (i in seq(1,length(args$restrict),2)) #interate through the restrictions
     #csvInputFile <- csvInputFile[csvInputFile[,"phi"]==-180,]
 }
 
-featureMetric <- csvInputFile[,args$y]
+noSpaces <- gsub(" ",".",args$y)
+featureMetric <- csvInputFile[,noSpaces]
 inputParam <- 1:dim(csvInputFile)[1]
 inputValues <- csvInputFile[,args$x]
 
