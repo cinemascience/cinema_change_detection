@@ -86,13 +86,15 @@ seg[i, 1] <- i
 seg[i, 2] <- z$Time[i]
 seg[i, 3] <- z$beta0[i] + z$beta1[i] * 1
 seg[i, 4] <- z$beta0[i] + z$beta1[i] * z$Time[i]
-
-for(i in 2:z$Partition)
+if (length(z$Time)>1)
 {
-    seg[i, 1] <- z$Time[i - 1] + 1
-    seg[i, 2] <- z$Time[i]
-    seg[i, 3] <- z$beta0[i] + z$beta1[i] * 1
-    seg[i, 4] <- z$beta0[i] + z$beta1[i] * (z$Time[i] - z$Time[i - 1])
+    for(i in 2:z$Partition)
+    {
+        seg[i, 1] <- z$Time[i - 1] + 1
+        seg[i, 2] <- z$Time[i]
+        seg[i, 3] <- z$beta0[i] + z$beta1[i] * 1
+        seg[i, 4] <- z$beta0[i] + z$beta1[i] * (z$Time[i] - z$Time[i - 1])
+    }
 }
 
 colnames(seg) <- c("x", "xend", "y", "yend")
