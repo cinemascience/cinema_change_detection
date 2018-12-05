@@ -25,7 +25,7 @@ if(!require(jsonlite)){install.packages("jsonlite")}
 library("argparse") #to parse the commandline input
 library("ecp") #to execute the multi-variate change detection
 library("ggplot2") #to draw the resulting plot
-library("reshape")
+library("reshape") #helper function for getting data into plot
 library("jsonlite") #to save the json file
 
 # parse the arguments to understand next steps
@@ -41,24 +41,15 @@ parser$add_argument("-o", "--output", help='output phrase to mark files by')
 
 args <- parser$parse_args()
 
-#print(args$csvFile)
-#print(args$path)
-#print(args$restrict)
-#print(args$x)
-#print(args$y)
-#print(args$cdParams)
-
 # read input csvFile
 csvInputFile <- read.csv(file=args$csvFile)
 
 rowValues <- vector(mode = "numeric", length=0)
-
 # cull out the needed rows according to the restrictions given
 for (i in seq(1,length(args$restrict),2)) #interate through the restrictions
 {
     csvInputFile <- csvInputFile[csvInputFile[,args$restrict[i]]==as.integer(args$restrict[i+1]),]
     rowValues <- as.numeric(rownames(csvInputFile))
-    #csvInputFile <- csvInputFile[csvInputFile[,"phi"]==-180,]
 }
 
 #get feature data
@@ -69,8 +60,6 @@ for (i in seq(1, length(args$y)))
     featureMetric <- csvInputFile[,noSpaces]
     featureData[[i]] <- featureMetric
 }
-#print(featureData)
-inputParam <- 1:dim(csvInputFile)[1]
 inputValues <- csvInputFile[,args$x]
 
 # --- change detection using ecp library
@@ -81,22 +70,14 @@ iterations <- as.integer(args$cd[2])
 minSize <- as.integer(args$cd[3])
 alpha <- as.double(args$cd[4])
 
-interpData <- vector("list", length(args$y))
-for (i in seq(1, length(args$y)))
-{
-    interpFM = approx(inputValues, featureData[[i]], n = 174)
-    interpData[[i]] <- interpFM$y
-}
-
 normData <- vector("list", length(args$y))
 for (i in seq(1, length(args$y)))
 {
-    normD = (interpData[[i]] - min(interpData[[i]])) / (max(interpData[[i]]) - min(interpData[[i]]))
+    normD = (featureData[[i]] - min(featureData[[i]])) / (max(featureData[[i]]) - min(featureData[[i]]))
     normData[[i]] <- normD
 }
 
 data = matrix(normData[[1]])
-
 if (length(args$y) >= 2)
 {
     for (i in seq(2, length(args$y)))
@@ -108,7 +89,6 @@ if (length(args$y) >= 2)
 }
 
 changeResults = e.divisive(X=data,sig.lvl=sigLevel,R=iterations,k=NULL,min.size=minSize,alpha=alpha)
-#print(changeResults$estimates)
 
 #------ change detection concluded
 
@@ -118,9 +98,15 @@ changeResults = e.divisive(X=data,sig.lvl=sigLevel,R=iterations,k=NULL,min.size=
 if (!dir.exists(file.path(args$path, "CCD")))
 dir.create(file.path(args$path, "CCD"))
 
+#edit last change point location if needed
+changePoints <- changeResults$estimates
+if (changePoints[length(changePoints)] > length(inputValues))
+{
+    changePoints[length(changePoints)] = length(inputValues)
+}
+
 #draw graph#
-interpX = seq(1,174)
-changeDF <- data.frame(id=interpX)
+changeDF <- data.frame(id=inputValues)
 for (i in seq(1, length(args$y)))
 {
     changeDF[args$y[i]] <- normData[[i]]
@@ -134,10 +120,10 @@ if (length(args$y) >= 2)
     }
 }
 changeDF.long <- melt(changeDF, id="id", measure = headings)
-changePlot <- ggplot(changeDF.long, aes(id, value, color = variable)) + geom_line() + labs(x= args$x, y = "Value")
+changePlot <- ggplot(changeDF.long, aes(id, value, color = variable)) + geom_line() + labs(x= args$x, y = "Normalized Value")
 for (i in seq(1, length(changeResults$estimates)))
 {
-    changePlot = changePlot + geom_vline(xintercept = changeResults$estimates[i], linetype="dotted", color = "black", size = 1)
+    changePlot = changePlot + geom_vline(xintercept = inputValues[changePoints], linetype="dotted", color = "black", size = 1)
 }
 ggsave(paste(args$path, "/CCD/", "CCD_",args$output, ".png", sep=""), plot = changePlot, width=512, height=128, units ="mm", dpi=100)
 
@@ -157,34 +143,18 @@ json<-toJSON(jsonData, auto_unbox=TRUE, pretty = TRUE)
 write(json, file= paste(args$path, "/CCD/", "CCD_",args$output, ".json", sep=""))
 
 #add change points to csv file#
-#changePoints <- changeResults$estimates
-#changePoints[length(ChangePoints)] = changePoints[length(ChangePoints)] - 1
 
-#csvOutputFile <- read.csv(file=args$csvFile, check.names=FALSE) #need to get full db now
-#changePtsIter = 1
 
-#changePts <- rep(0,dim(csvOutputFile)[1])
+csvOutputFile <- read.csv(file=args$csvFile, check.names=FALSE) #need to get full db now
+changePtsIter = 1
+changePts <- rep(0,dim(csvOutputFile)[1])
 
-#for (i in 1:length(changePoints))
-#{
-#    changePts[rowValues[changePoints[i]]] = 1;
-#}
+for (i in 1:length(changePoints))
+{
+    changePts[rowValues[changePoints[i]]] = 1;
+}
 
-##print(which(csvOutputFile$phi == -180))
-
-##changePts <- 1:dim(csvInputFile)[1]
-
-##changePoints <- changePoints + 1
-
-##for(i in 1:length(changePts))
-##{ if (changePoints[changePtsIter] == i) {
-##    changePts[i] = 1
-##    if (changePtsIter < length(changePoints)) { changePtsIter =
-##        changePtsIter + 1 } } else { changePts[i] = 0; }
-##}
-
-##write output csvFile
-
-#csvOutputFile <- cbind(csvOutputFile, changePts)
-#colnames(csvOutputFile)[which(names(csvOutputFile) == "changePts")] <- paste("CCD_",args$output, sep="")
-#write.csv(csvOutputFile, args$csvFile, row.names=FALSE)
+#write output csvFile
+csvOutputFile <- cbind(csvOutputFile, changePts)
+colnames(csvOutputFile)[which(names(csvOutputFile) == "changePts")] <- paste("CCD_",args$output, sep="")
+write.csv(csvOutputFile, args$csvFile, row.names=FALSE)
