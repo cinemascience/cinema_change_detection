@@ -3,7 +3,7 @@
 #---
 
 #--
-# example usage command
+# example commandline execution
 # Rscript multiVariatechangeDetection.R -f /path/to/data.csv -p /path/to/nyx.cdb -r phi -180 theta -45 iso 1 -x time -y "entropy" "image canny count" "sample" -cd 0.05 199 2 0.05 -o iso1_Time_vs_Variables
 #--
 
