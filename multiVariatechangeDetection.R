@@ -3,7 +3,7 @@
 #---
 
 #--
-# example commandline execution
+# example usage command
 # Rscript multiVariatechangeDetection.R -f /path/to/data.csv -p /path/to/nyx.cdb -r phi -180 theta -45 iso 1 -x time -y "entropy" "image canny count" "sample" -cd 0.05 199 2 0.05 -o iso1_Time_vs_Variables
 #--
 
@@ -45,11 +45,18 @@ args <- parser$parse_args()
 csvInputFile <- read.csv(file=args$csvFile)
 
 rowValues <- vector(mode = "numeric", length=0)
+
 # cull out the needed rows according to the restrictions given
-for (i in seq(1,length(args$restrict),2)) #interate through the restrictions
+if (length(args$restrict) > 0)
 {
-    csvInputFile <- csvInputFile[csvInputFile[,args$restrict[i]]==as.integer(args$restrict[i+1]),]
-    rowValues <- as.numeric(rownames(csvInputFile))
+    for (i in seq(1,length(args$restrict),2)) #interate through the restrictions
+    {
+        csvInputFile <- csvInputFile[csvInputFile[,args$restrict[i]]==as.integer(args$restrict[i+1]),]
+        rowValues <- as.numeric(rownames(csvInputFile))
+    }
+} else
+{
+    rowValues <- inputParam <- 1:dim(csvInputFile)[1]
 }
 
 #get feature data
@@ -73,8 +80,15 @@ alpha <- as.double(args$cd[4])
 normData <- vector("list", length(args$y))
 for (i in seq(1, length(args$y)))
 {
-    normD = (featureData[[i]] - min(featureData[[i]])) / (max(featureData[[i]]) - min(featureData[[i]]))
-    normData[[i]] <- normD
+    if ((max(featureData[[i]]) - min(featureData[[i]])) != 0)
+    {
+        normD = (featureData[[i]] - min(featureData[[i]])) / (max(featureData[[i]]) - min(featureData[[i]]))
+        normData[[i]] <- normD
+    } else
+    {
+        normD <- rep(0.5,dim(csvInputFile)[1])
+        normData[[i]] <- normD
+    }
 }
 
 data = matrix(normData[[1]])
@@ -129,11 +143,18 @@ ggsave(paste(args$path, "/CCD/", "CCD_",args$output, ".png", sep=""), plot = cha
 
 #write the corresponding json file#
 titleText <- ""
-for (i in seq(1,length(args$restrict),2)) #interate through the restrictions
+if (length(args$restrict) > 0)
 {
-    titleText <- paste(titleText, args$restrict[i], ":", args$restrict[i+1], ", ")
+    for (i in seq(1,length(args$restrict),2)) #interate through the restrictions
+    {
+        titleText <- paste(titleText, args$restrict[i], ":", args$restrict[i+1], ", ")
+    }
+    titleText <- substr(titleText, 1, nchar(titleText)-2)
+} else
+{
+    titleText <- paste("Change Point Detection with no Restrictions")
 }
-titleText <- substr(titleText, 1, nchar(titleText)-2)
+
 descText <- paste("There are", toString(length(changeResults$estimates)), "change points in this study.", sep=" ")
 #imageText <- paste(args$path, "/CCD/", "CCD_",args$x,"_",args$y, ".png", sep="")
 imageText <- paste("CCD_", args$output, ".png", sep="")
