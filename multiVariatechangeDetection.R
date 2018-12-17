@@ -158,6 +158,7 @@ if (length(args$restrict) > 0)
 descText <- paste("There are", toString(length(changeResults$estimates)), "change points in this study.", sep=" ")
 #imageText <- paste(args$path, "/CCD/", "CCD_",args$x,"_",args$y, ".png", sep="")
 imageText <- paste("CCD_", args$output, ".png", sep="")
+Sys.setenv(TZ="America/Denver")
 jsonData <- list (title = titleText, desc = descText, parameters = list(args$x, args$y), date = Sys.time(), image = imageText, cinema = list(changecolumn=paste("CCD_", args$output, sep="")))
 
 json<-toJSON(jsonData, auto_unbox=TRUE, pretty = TRUE)
@@ -179,3 +180,6 @@ for (i in 1:length(changePoints))
 csvOutputFile <- cbind(csvOutputFile, changePts)
 colnames(csvOutputFile)[which(names(csvOutputFile) == "changePts")] <- paste("CCD_",args$output, sep="")
 write.csv(csvOutputFile, args$csvFile, row.names=FALSE)
+
+
+quit(save = "no", status = 0, runLast = FALSE)
